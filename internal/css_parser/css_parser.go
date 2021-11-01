@@ -974,6 +974,10 @@ loop:
 				token = p.tryToReduceCalcExpression(token)
 			}
 
+			if p.options.MangleSyntax {
+				token = p.mangleGradientFunctions(token)
+			}
+
 			// Treat a URL function call with a string just like a URL token
 			if token.Text == "url" && len(nested) == 1 && nested[0].Kind == css_lexer.TString {
 				token.Kind = css_lexer.TURL

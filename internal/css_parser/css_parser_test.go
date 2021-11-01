@@ -1441,6 +1441,33 @@ func TestTransform(t *testing.T) {
 	expectPrintedMangle(t, "a { transform: perspective(1px) }", "a {\n  transform: perspective(1px);\n}\n")
 }
 
+func TestGradient(t *testing.T) {
+	expectPrintedMangle(t, "a { background: linear-gradient(white) }", "a {\n  background: linear-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: LINEAR-GRADIENT(white) }", "a {\n  background: LINEAR-GRADIENT(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: repeating-linear-gradient(white) }", "a {\n  background: repeating-linear-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(white 90%) }", "a {\n  background: linear-gradient(#fff 90%);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(black 10%, white 90%) }", "a {\n  background: linear-gradient(#000 10%, #fff 90%);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(black 10%, 80%, white 90%) }", "a {\n  background: linear-gradient(#000 10%, 80%, #fff 90%);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(black 10%, white 80% 90%) }", "a {\n  background: linear-gradient(#000 10%, #fff 80% 90%);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(10% black, 80% 90% white) }", "a {\n  background: linear-gradient(10% #000, 80% 90% #fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: linear-gradient(white 0%) }", "a {\n  background: linear-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(white 100%) }", "a {\n  background: linear-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(black 0%, white 100%) }", "a {\n  background: linear-gradient(#000, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(black 0% 10%, white 90% 100%) }", "a {\n  background: linear-gradient(#000 0% 10%, #fff 90% 100%);\n}\n")
+
+	expectPrintedMangle(t, "a { background: linear-gradient(0, white) }", "a {\n  background: linear-gradient(0, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(0deg, white) }", "a {\n  background: linear-gradient(0deg, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(to top, white) }", "a {\n  background: linear-gradient(0deg, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(to right, white) }", "a {\n  background: linear-gradient(90deg, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(to bottom, white) }", "a {\n  background: linear-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(to left, white) }", "a {\n  background: linear-gradient(270deg, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(to top left, white) }", "a {\n  background: linear-gradient(to top left, #fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: linear-gradient(var(--variable), white) }", "a {\n  background: linear-gradient(var(--variable), white);\n}\n")
+	expectPrintedMangle(t, "a { background: linear-gradient(10deg, var(--variable), white) }", "a {\n  background: linear-gradient(10deg, var(--variable), white);\n}\n")
+}
+
 func TestMangleAlpha(t *testing.T) {
 	alphas := []string{
 		"0", ".004", ".008", ".01", ".016", ".02", ".024", ".027", ".03", ".035", ".04", ".043", ".047", ".05", ".055", ".06",
