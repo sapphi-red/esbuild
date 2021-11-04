@@ -12,6 +12,9 @@ func (p *parser) mangleGradientFunctions(token css_ast.Token) css_ast.Token {
 	case "linear-gradient", "repeating-linear-gradient":
 		children := p.mangleLinearGradient(*token.Children)
 		token.Children = &children
+	case "radial-gradient", "repeating-radial-gradient":
+		children := p.mangleRadialGradient(*token.Children)
+		token.Children = &children
 	}
 
 	return token
@@ -33,6 +36,39 @@ func (p *parser) mangleLinearGradient(tokens []css_ast.Token) []css_ast.Token {
 		if i == 0 && getColorIndex(t) == -1 {
 			// it is not <linear-color-stop>
 			t = p.mangleLinearGradientDirection(t)
+		} else {
+			t = p.mangleLinearColorStopOrHint(t, isFirst, isLast)
+			isFirst = false
+		}
+
+		if len(t) > 0 {
+			if len(res) > 0 {
+				res = append(res, p.commaToken())
+			}
+			t[0].Whitespace &= ^css_ast.WhitespaceBefore
+			res = append(res, t...)
+		}
+	}
+
+	return res
+}
+
+func (p *parser) mangleRadialGradient(tokens []css_ast.Token) []css_ast.Token {
+	// Specification: https://drafts.csswg.org/css-images-3/#radial-gradients
+	// https://www.w3.org/TR/css-images-4/#radial-gradients
+	res := make([]css_ast.Token, 0, len(tokens))
+	splittedTokens, ok := getTokensSplittedByComma(tokens)
+	if !ok {
+		return tokens
+	}
+
+	isFirst := true
+	for i, t := range splittedTokens {
+		isLast := i == len(splittedTokens)-1
+
+		if i == 0 && getColorIndex(t) == -1 {
+			// it is not <linear-color-stop>
+			t = p.mangleRadialGradientDirection(t)
 		} else {
 			t = p.mangleLinearColorStopOrHint(t, isFirst, isLast)
 			isFirst = false
@@ -104,6 +140,138 @@ func (p *parser) mangleLinearGradientDirection(tokens []css_ast.Token) []css_ast
 	}
 
 	return tokens
+}
+
+// [ <ending-shape> || <size> ]? [ at <position> ]?
+func (p *parser) mangleRadialGradientDirection(tokens []css_ast.Token) []css_ast.Token {
+	pos := 0
+	newTokens := make([]css_ast.Token, 0, len(tokens))
+
+	endingShape := ""
+	size := make([]css_ast.Token, 0, 2)
+	extentKeyword := ""
+
+	// [ <ending-shape> || <size> ]?
+	for ; pos < len(tokens); pos++ {
+		token := tokens[pos]
+		loweredText := strings.ToLower(token.Text)
+		if isSameKeyword(token, "at") {
+			break
+		}
+
+		// <ending-shape>
+		if endingShape == "" && token.Kind == css_lexer.TIdent {
+			switch loweredText {
+			case "circle", "ellipse":
+				endingShape = loweredText
+				continue
+			}
+		}
+
+		// <size>
+		if extentKeyword == "" && len(size) == 0 {
+			if token.Kind == css_lexer.TIdent {
+				switch loweredText {
+				case "closest-side", "farthest-side", "closest-corner", "farthest-corner":
+					extentKeyword = loweredText
+					continue
+				}
+			} else if isLengthTypeOrPercentage(token) {
+				size = append(size, token)
+				if pos+1 < len(tokens) && isLengthTypeOrPercentage(tokens[pos+1]) {
+					size = append(size, tokens[pos+1])
+					pos++
+				}
+				continue
+			}
+		}
+
+		// unknown token found
+		return tokens
+	}
+
+	// omit ending-shape
+	if len(size) == 1 {
+		if endingShape == "circle" {
+			endingShape = ""
+		}
+	} else {
+		if endingShape == "ellipse" {
+			endingShape = ""
+		}
+	}
+
+	// omit size
+	if extentKeyword == "farthest-corner" {
+		extentKeyword = ""
+	}
+
+	if len(size) > 0 {
+		size[len(size)-1].Whitespace &= ^css_ast.WhitespaceAfter
+	}
+
+	newTokens = append(newTokens, size...)
+	if extentKeyword != "" {
+		var whitespace css_ast.WhitespaceFlags
+		if !p.options.RemoveWhitespace && len(newTokens) > 0 {
+			whitespace = css_ast.WhitespaceBefore
+		}
+
+		newTokens = append(newTokens, css_ast.Token{
+			Kind:       css_lexer.TIdent,
+			Text:       extentKeyword,
+			Whitespace: whitespace,
+		})
+	}
+	if endingShape != "" {
+		var whitespace css_ast.WhitespaceFlags
+		if !p.options.RemoveWhitespace && len(newTokens) > 0 {
+			whitespace = css_ast.WhitespaceBefore
+		}
+
+		newTokens = append(newTokens, css_ast.Token{
+			Kind:       css_lexer.TIdent,
+			Text:       endingShape,
+			Whitespace: whitespace,
+		})
+	}
+
+	if !(pos < len(tokens)) {
+		return newTokens
+	}
+
+	// at <position>
+	atPos := pos
+	token := tokens[atPos]
+	pos++
+	if pos < len(tokens) && isSameKeyword(token, "at") {
+		token = tokens[pos]
+		pos++
+		if isCenterOr50Percent(token) {
+			// `at center` (not `at 50%`)
+			if pos == len(tokens) && token.Kind == css_lexer.TIdent {
+				return newTokens
+			}
+			// at center center
+			if pos == len(tokens)-1 {
+				token = tokens[pos]
+				if isCenterOr50Percent(token) {
+					return newTokens
+				}
+			}
+		}
+
+		// cf. at left top
+		newTokens = append(newTokens, tokens[atPos:]...)
+		return newTokens
+	}
+
+	// unknown token found
+	return tokens
+}
+
+func isCenterOr50Percent(token css_ast.Token) bool {
+	return isSameKeyword(token, "center") || isEqualPercentage(token, "50")
 }
 
 // <linear-color-stop> or <linear-color-hint>

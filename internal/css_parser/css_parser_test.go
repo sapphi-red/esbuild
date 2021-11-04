@@ -1466,6 +1466,32 @@ func TestGradient(t *testing.T) {
 
 	expectPrintedMangle(t, "a { background: linear-gradient(var(--variable), white) }", "a {\n  background: linear-gradient(var(--variable), white);\n}\n")
 	expectPrintedMangle(t, "a { background: linear-gradient(10deg, var(--variable), white) }", "a {\n  background: linear-gradient(10deg, var(--variable), white);\n}\n")
+
+	expectPrintedMangle(t, "a { background: radial-gradient(white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: repeating-radial-gradient(white) }", "a {\n  background: repeating-radial-gradient(#fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: radial-gradient(ellipse, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(circle, white) }", "a {\n  background: radial-gradient(circle, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(closest-side, white) }", "a {\n  background: radial-gradient(closest-side, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(farthest-corner, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(ellipse closest-side, white) }", "a {\n  background: radial-gradient(closest-side, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(circle closest-side, white) }", "a {\n  background: radial-gradient(closest-side circle, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(closest-side circle, white) }", "a {\n  background: radial-gradient(closest-side circle, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(1rem circle, white) }", "a {\n  background: radial-gradient(1rem, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(0 circle, white) }", "a {\n  background: radial-gradient(0, #fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: radial-gradient(at center, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at left, white) }", "a {\n  background: radial-gradient(at left, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at 5rem, white) }", "a {\n  background: radial-gradient(at 5rem, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at center center, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at center 50%, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at 50% center, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at 50% 50%, white) }", "a {\n  background: radial-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(at top center, white) }", "a {\n  background: radial-gradient(at top center, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(CIRCLE AT CENTER, white) }", "a {\n  background: radial-gradient(circle, #fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: radial-gradient(black 0%, white 100%) }", "a {\n  background: radial-gradient(#000, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: radial-gradient(black 0% 10%, white 90% 100%) }", "a {\n  background: radial-gradient(#000 0% 10%, #fff 90% 100%);\n}\n")
 }
 
 func TestMangleAlpha(t *testing.T) {
