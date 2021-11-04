@@ -1492,6 +1492,29 @@ func TestGradient(t *testing.T) {
 
 	expectPrintedMangle(t, "a { background: radial-gradient(black 0%, white 100%) }", "a {\n  background: radial-gradient(#000, #fff);\n}\n")
 	expectPrintedMangle(t, "a { background: radial-gradient(black 0% 10%, white 90% 100%) }", "a {\n  background: radial-gradient(#000 0% 10%, #fff 90% 100%);\n}\n")
+
+	expectPrintedMangle(t, "a { background: conic-gradient(white) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: repeating-conic-gradient(white) }", "a {\n  background: repeating-conic-gradient(#fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: conic-gradient(from 30deg, white) }", "a {\n  background: conic-gradient(from 30deg, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(from 0deg, white) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(at center, white) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(at center center, white) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(from 0deg at top left, white) }", "a {\n  background: conic-gradient(at top left, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(from 30deg at center, white) }", "a {\n  background: conic-gradient(from 30deg, #fff);\n}\n")
+
+	expectPrintedMangle(t, "a { background: conic-gradient(white 0%) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 100%) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(black 0%, white 100%) }", "a {\n  background: conic-gradient(#000, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 0deg) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 0grad) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 0rad) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 0turn) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 360deg) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 400grad) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(white 1turn) }", "a {\n  background: conic-gradient(#fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(black 0%, white 100%) }", "a {\n  background: conic-gradient(#000, #fff);\n}\n")
+	expectPrintedMangle(t, "a { background: conic-gradient(black 0% 10%, white 90% 100%) }", "a {\n  background: conic-gradient(#000 0% 10%, #fff 90% 100%);\n}\n")
 }
 
 func TestMangleAlpha(t *testing.T) {

@@ -101,18 +101,18 @@ func isColorType(token css_ast.Token) bool {
 
 var loweredLengthUnits = map[string]struct{}{
 	// Relative Lengths https://www.w3.org/TR/css3-values/#relative-lengths
-	"em": {},
-	"ex": {},
-	"ch": {},
-	"rem": {},
-	"vw": {},
-	"vh": {},
+	"em":   {},
+	"ex":   {},
+	"ch":   {},
+	"rem":  {},
+	"vw":   {},
+	"vh":   {},
 	"vmin": {},
 	"vmax": {},
 	// Absolute Lengths https://www.w3.org/TR/css3-values/#absolute-lengths
 	"cm": {},
 	"mm": {},
-	"q": {},
+	"q":  {},
 	"in": {},
 	"pc": {},
 	"pt": {},
@@ -136,4 +136,22 @@ func isLengthType(token css_ast.Token) bool {
 // Specification: https://www.w3.org/TR/css3-values/#typedef-length-percentage
 func isLengthTypeOrPercentage(token css_ast.Token) bool {
 	return isLengthType(token) || token.Kind == css_lexer.TPercentage
+}
+
+var loweredAngleUnits = map[string]struct{}{
+	"deg":  {},
+	"grad": {},
+	"rad":  {},
+	"turn": {},
+}
+
+// Specification: https://www.w3.org/TR/css3-values/#angles
+func IsAngleType(token css_ast.Token) bool {
+	if token.Kind != css_lexer.TDimension {
+		return false
+	}
+	if _, ok := loweredAngleUnits[strings.ToLower(token.DimensionUnit())]; ok {
+		return true
+	}
+	return false
 }
