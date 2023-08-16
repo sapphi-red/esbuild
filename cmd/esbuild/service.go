@@ -13,6 +13,7 @@ import (
 	"os"
 	"regexp"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/evanw/esbuild/internal/cli_helpers"
@@ -937,9 +938,14 @@ func (service *serviceType) convertPlugins(key int, jsPlugins interface{}, activ
 			}
 			activeBuild.mutex.Unlock()
 
+			disposed := atomic.Bool{}
+
 			// Only register "OnStart" if needed
 			if hasOnStart {
 				build.OnStart(func() (api.OnStartResult, error) {
+					if disposed.Load() {
+						return api.OnStartResult{}, errors.New("The service was stopped")
+					}
 					response, ok := service.sendRequest(map[string]interface{}{
 						"command": "on-start",
 						"key":     key,
@@ -957,6 +963,10 @@ func (service *serviceType) convertPlugins(key int, jsPlugins interface{}, activ
 			// Only register "OnResolve" if needed
 			if len(onResolveCallbacks) > 0 {
 				build.OnResolve(api.OnResolveOptions{Filter: ".*"}, func(args api.OnResolveArgs) (api.OnResolveResult, error) {
+					if disposed.Load() {
+						return api.OnResolveResult{}, errors.New("The service was stopped")
+					}
+
 					var ids []interface{}
 					applyPath := logger.Path{Text: args.Path, Namespace: args.Namespace}
 					for _, item := range onResolveCallbacks {
@@ -1042,6 +1052,10 @@ func (service *serviceType) convertPlugins(key int, jsPlugins interface{}, activ
 			// Only register "OnLoad" if needed
 			if len(onLoadCallbacks) > 0 {
 				build.OnLoad(api.OnLoadOptions{Filter: ".*"}, func(args api.OnLoadArgs) (api.OnLoadResult, error) {
+					if disposed.Load() {
+						return api.OnLoadResult{}, errors.New("The service was stopped")
+					}
+
 					var ids []interface{}
 					applyPath := logger.Path{Text: args.Path, Namespace: args.Namespace}
 					for _, item := range onLoadCallbacks {
@@ -1116,6 +1130,10 @@ func (service *serviceType) convertPlugins(key int, jsPlugins interface{}, activ
 					return result, nil
 				})
 			}
+
+			build.OnDispose(func () {
+				disposed.Store(true)
+			})
 		},
 	}}, hasOnEnd, nil
 }
